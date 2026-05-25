@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>🌲 情绪树洞</title>
+    <style>
+        /* 稍后加样式，先保证功能 */
+    </style>
+</head>
+<body>
+    <h1>🌲 情绪树洞</h1>
+    <textarea id="moodInput" rows="4" cols="40" placeholder="写下你此刻的心情、想法或计划..."></textarea>
+    <br>
+    <button onclick="saveMood()">📝 存入树洞</button>
+    <hr>
+    <h2>📖 历史记录</h2>
+    <div id="history"></div>
+
+    <script>
+       function saveMood() {
+    const input = document.getElementById('moodInput');
+    const text = input.value.trim();
+    if (text === '') {
+        alert('请写点什么再存入吧～');
+        return;
+    }
+
+    // 获取已有记录
+    let moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    // 添加新记录（含时间）
+    moods.unshift({
+        text: text,
+        date: new Date().toLocaleString()
+    });
+    // 保存回 localStorage
+    localStorage.setItem('moods', JSON.stringify(moods));
+
+    // 清空输入框
+    input.value = '';
+    // 刷新显示
+    displayMoods();
+}
+
+function displayMoods() {
+    const moods = JSON.parse(localStorage.getItem('moods') || '[]');
+    const historyDiv = document.getElementById('history');
+    if (moods.length === 0) {
+        historyDiv.innerHTML = '<p>✨ 还没有记录，写一条吧。</p>';
+        return;
+    }
+    let html = '';
+    for (let i = 0; i < moods.length; i++) {
+        html += `
+            <div style="border-bottom:1px solid #eee; margin-bottom:10px; padding-bottom:5px;">
+                <strong>📌 ${moods[i].date}</strong><br>
+                ${escapeHtml(moods[i].text)}
+            </div>
+        `;
+    }
+    historyDiv.innerHTML = html;
+}
+
+// 简单防止XSS
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+// 页面加载时显示已有记录
+window.onload = displayMoods;
+    </script>
+</body>
+</html>
